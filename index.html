@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新月形沙丘形成过程教学演示</title>
+<style>
+  :root{
+    --bg:#eef5fb;
+    --sand:#e6c98f;
+    --sand2:#d8b06a;
+    --ground:#a88e63;
+    --text:#243746;
+    --sub:#486274;
+    --wind:#5ca6da;
+    --label:#6e4f1f;
+    --slip:#9b5d2e;
+    --panel:#ffffffee;
+    --line:#d7e3ec;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(to bottom,#f6fbff,#eef5fb);
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+    color:var(--text);
+  }
+  .wrap{
+    width:min(96vw, 1600px);
+    margin:18px auto;
+    padding:12px 16px 20px;
+  }
+  .title{
+    text-align:center;
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:1px;
+    margin:4px 0 14px;
+    color:#24485b;
+  }
+  .stagebar{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+    margin:0 0 14px;
+  }
+  .stage{
+    background:#ffffffd8;
+    border:1px solid #d8e3ea;
+    border-radius:12px;
+    padding:10px 12px;
+    min-height:74px;
+    transition:.25s ease;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+  }
+  .stage.active{
+    background:#f6fbff;
+    border-color:#89b9dc;
+    box-shadow:0 0 0 2px rgba(92,166,218,.15),0 4px 14px rgba(0,0,0,.05);
+    transform:translateY(-1px);
+  }
+  .stage .s1{
+    font-size:15px;
+    font-weight:700;
+    color:#355267;
+    margin-bottom:4px;
+  }
+  .stage .s2{
+    font-size:13px;
+    line-height:1.45;
+    color:#5f7583;
+  }
+  .board{
+    background:var(--panel);
+    border:1px solid #d9e5ed;
+    border-radius:18px;
+    box-shadow:0 8px 24px rgba(0,0,0,.06);
+    padding:14px;
+  }
+  svg{
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:14px;
+    background:linear-gradient(to bottom,#eef6fc 0%,#f8fbfe 58%,#f7edd7 58%,#f3e2b9 100%);
+  }
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    margin-top:14px;
+  }
+  button{
+    border:none;
+    background:#4f95c6;
+    color:#fff;
+    padding:10px 18px;
+    border-radius:10px;
+    font-size:15px;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(79,149,198,.2);
+  }
+  button:hover{filter:brightness(1.04)}
+  button.secondary{background:#7c95a5}
+  button.light{
+    background:#eef6fc;
+    color:#365468;
+    border:1px solid #cfe0ec;
+    box-shadow:none;
+  }
+  .status{
+    margin-top:12px;
+    text-align:center;
+    font-size:16px;
+    color:#587082;
+    font-weight:700;
+    min-height:24px;
+  }
+  .captionText{
+    font-size:24px;
+    font-weight:700;
+    fill:#355267;
+  }
+  .smallText{
+    font-size:16px;
+    fill:#607786;
+  }
+  .labelText{
+    font-size:20px;
+    font-weight:700;
+    fill:var(--label);
+  }
+  .infoText{
+    font-size:24px;
+    font-weight:700;
+    fill:#3e5363;
+  }
+  .minorLabel{
+    font-size:18px;
+    font-weight:700;
+    fill:#7c5b20;
+  }
+  .windLabel{
+    font-size:20px;
+    font-weight:700;
+    fill:#3e88bd;
+  }
+  .lineSoft{
+    stroke:var(--line);
+    stroke-width:1;
+  }
+  .pauseTag{
+    fill:#fff7d6;
+    stroke:#d6c178;
+    stroke-width:1.5;
+  }
+  .pauseText{
+    font-size:20px;
+    font-weight:700;
+    fill:#866a1c;
+  }
+  @media (max-width: 1200px){
+    .stagebar{grid-template-columns:repeat(3,1fr)}
+  }
+  @media (max-width: 1100px){
+    .title{font-size:28px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">新月形沙丘形成过程教学演示</div>
+
+  <div class="stagebar" id="stagebar">
+    <div class="stage active" data-stage="0">
+      <div class="s1">① 平坦沙地</div>
+      <div class="s2">地表裸露、无植被覆盖，具有充足松散沙源。</div>
+    </div>
+    <div class="stage" data-stage="1">
+      <div class="s1">② 风沙搬运</div>
+      <div class="s2">盛行风定向吹拂，沙粒沿地表不断向下风方向移动。</div>
+    </div>
+    <div class="stage" data-stage="2">
+      <div class="s1">③ 初始堆积</div>
+      <div class="s2">遇微小障碍物后风速减弱，部分沙粒沉积，形成小沙堆。</div>
+    </div>
+    <div class="stage" data-stage="3">
+      <div class="s1">④ 坡面分异</div>
+      <div class="s2">迎风坡较缓，背风坡较陡，背风侧形成滑落面。</div>
+    </div>
+    <div class="stage" data-stage="4">
+      <div class="s1">⑤ 形成新月形沙丘</div>
+      <div class="s2">沙丘两角顺风向延伸，形成较完整的新月形轮廓。</div>
+    </div>
+    <div class="stage" data-stage="5">
+      <div class="s1">⑥ 沙丘顺风迁移</div>
+      <div class="s2">在持续风力作用下，沙丘整体缓慢向下风方向移动。</div>
+    </div>
+  </div>
+
+  <div class="board">
+    <svg id="scene" viewBox="0 0 1600 900" aria-label="新月形沙丘形成过程演示图">
+      <defs>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#5ca6da"></path>
+        </marker>
+        <marker id="arrowBrown" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#8c5f16"></path>
+        </marker>
+        <marker id="arrowSlip" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#9b5d2e"></path>
+        </marker>
+      </defs>
+
+      <text x="800" y="58" text-anchor="middle" class="captionText">新月形沙丘形成过程</text>
+      <text x="800" y="92" text-anchor="middle" class="smallText">定向盛行风 · 松散沙源 · 迎风堆积 · 背风滑落 · 顺风迁移</text>
+      <line x1="60" y1="112" x2="1540" y2="112" class="lineSoft"></line>
+
+      <line x1="70" y1="620" x2="1530" y2="620" stroke="#9c8660" stroke-width="4"></line>
+      <path d="M70,620 L1530,620 L1530,860 L70,860 Z" fill="#ead19a"></path>
+
+      <rect id="obstacle" x="470" y="600" width="16" height="20" rx="2" fill="#8f8577"></rect>
+
+      <g id="windArrows">
+        <line x1="110" y1="230" x2="330" y2="230" stroke="#5ca6da" stroke-width="6" marker-end="url(#arrowBlue)" opacity="0.95"></line>
+        <line x1="130" y1="300" x2="350" y2="300" stroke="#5ca6da" stroke-width="6" marker-end="url(#arrowBlue)" opacity="0.95"></line>
+        <line x1="150" y1="370" x2="370" y2="370" stroke="#5ca6da" stroke-width="6" marker-end="url(#arrowBlue)" opacity="0.95"></line>
+        <text x="112" y="205" class="windLabel">盛行风向</text>
+      </g>
+
+      <g id="streamlines"></g>
+      <g id="particles"></g>
+
+      <path id="duneFill" d="" fill="#d8b06a" opacity="0.96"></path>
+      <path id="duneLine" d="" fill="none" stroke="#a97832" stroke-width="4"></path>
+
+      <g id="slipParticles"></g>
+
+      <text id="sourceLabel" x="125" y="570" class="labelText">松散沙源</text>
+      <text id="infoLabel" x="800" y="150" text-anchor="middle" class="infoText">
+        平坦裸露沙地：地表无植被覆盖，存在充足松散沙源
+      </text>
+
+      <text id="windwardLabel" x="0" y="0" class="labelText"></text>
+      <text id="leewardLabel" x="0" y="0" class="labelText"></text>
+      <text id="slipfaceLabel" x="0" y="0" class="labelText"></text>
+      <text id="transportLabel" x="0" y="0" class="minorLabel"></text>
+      <text id="migrationLabel" x="0" y="0" class="labelText"></text>
+
+      <line id="slopeArrow1" x1="0" y1="0" x2="0" y2="0" stroke="#8c5f16" stroke-width="4" marker-end="url(#arrowBrown)" opacity="0.95"></line>
+      <line id="slopeArrow2" x1="0" y1="0" x2="0" y2="0" stroke="#8c5f16" stroke-width="4" marker-end="url(#arrowBrown)" opacity="0.95"></line>
+      <line id="slopeArrow3" x1="0" y1="0" x2="0" y2="0" stroke="#8c5f16" stroke-width="4" marker-end="url(#arrowBrown)" opacity="0.95"></line>
+      <line id="slipArrow" x1="0" y1="0" x2="0" y2="0" stroke="#9b5d2e" stroke-width="4" marker-end="url(#arrowSlip)" opacity="0.95"></line>
+      <line id="migrationArrow" x1="0" y1="0" x2="0" y2="0" stroke="#5d7f96" stroke-width="5" marker-end="url(#arrowBlue)" opacity="0.95"></line>
+
+      <g id="pauseNotice" opacity="0">
+        <rect x="610" y="760" width="380" height="62" rx="14" class="pauseTag"></rect>
+        <text x="800" y="800" text-anchor="middle" class="pauseText">已自动停顿，请点击“继续播放”</text>
+      </g>
+    </svg>
+
+    <div class="controls">
+      <button id="playBtn">继续播放</button>
+      <button id="resetBtn" class="secondary">重置</button>
+      <button class="light stageJump" data-jump="0">平坦沙地</button>
+      <button class="light stageJump" data-jump="1">风沙搬运</button>
+      <button class="light stageJump" data-jump="2">初始堆积</button>
+      <button class="light stageJump" data-jump="3">坡面分异</button>
+      <button class="light stageJump" data-jump="4">形成新月形沙丘</button>
+      <button class="light stageJump" data-jump="5">顺风迁移</button>
+    </div>
+
+    <div class="status" id="statusText">当前状态：第 1 阶段已停顿，可开始讲解</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const particlesG = document.getElementById('particles');
+  const slipParticlesG = document.getElementById('slipParticles');
+  const streamlinesG = document.getElementById('streamlines');
+
+  const duneFill = document.getElementById('duneFill');
+  const duneLine = document.getElementById('duneLine');
+
+  const infoLabel = document.getElementById('infoLabel');
+  const windwardLabel = document.getElementById('windwardLabel');
+  const leewardLabel = document.getElementById('leewardLabel');
+  const slipfaceLabel = document.getElementById('slipfaceLabel');
+  const transportLabel = document.getElementById('transportLabel');
+  const migrationLabel = document.getElementById('migrationLabel');
+
+  const slopeArrow1 = document.getElementById('slopeArrow1');
+  const slopeArrow2 = document.getElementById('slopeArrow2');
+  const slopeArrow3 = document.getElementById('slopeArrow3');
+  const slipArrow = document.getElementById('slipArrow');
+  const migrationArrow = document.getElementById('migrationArrow');
+
+  const playBtn = document.getElementById('playBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const pauseNotice = document.getElementById('pauseNotice');
+  const statusText = document.getElementById('statusText');
+
+  const stageBox = [...document.querySelectorAll('.stage')];
+  const stageJumpBtns = [...document.querySelectorAll('.stageJump')];
+
+  const groundY = 620;
+  const obstacleX = 478;
+
+  let t = 0;
+  const totalDuration = 40;
+  let lastTime = performance.now();
+
+  let playing = false;
+  let autoPaused = true;
+
+  const stageTimes = [
+    totalDuration * 0.03,
+    totalDuration * 0.18,
+    totalDuration * 0.34,
+    totalDuration * 0.52,
+    totalDuration * 0.72,
+    totalDuration * 0.90
+  ];
+
+  let reachedPauses = new Set([0]);
+
+  const particles = [];
+  const particleEls = [];
+  const particleCount = 120;
+
+  for(let i=0;i<particleCount;i++){
+    const p = {
+      phase: Math.random(),
+      lane: i % 5,
+      r: 3 + Math.random()*1.3,
+      x: 0,
+      y: 0
+    };
+    particles.push(p);
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("r", p.r);
+    c.setAttribute("fill", "#c49a4a");
+    c.setAttribute("opacity", "0.9");
+    particlesG.appendChild(c);
+    particleEls.push(c);
+  }
+
+  const streamEls = [];
+  const streamY = [225, 270, 315, 360, 405];
+  for(let i=0;i<streamY.length;i++){
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("fill","none");
+    path.setAttribute("stroke","#84bbe4");
+    path.setAttribute("stroke-width","3");
+    path.setAttribute("opacity","0.78");
+    streamlinesG.appendChild(path);
+    streamEls.push(path);
+  }
+
+  const slipEls = [];
+  const slipCount = 24;
+  for(let i=0;i<slipCount;i++){
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("r", 3.6);
+    c.setAttribute("fill","#b7863f");
+    c.setAttribute("opacity","0.82");
+    slipParticlesG.appendChild(c);
+    slipEls.push(c);
+  }
+
+  function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+  function lerp(a,b,p){ return a+(b-a)*p; }
+
+  function getPhaseIndexByTime(time){
+    for(let i=stageTimes.length-1; i>=0; i--){
+      if(time >= stageTimes[i]) return i;
+    }
+    return 0;
+  }
+
+  function getPhaseName(i){
+    return [
+      "第 1 阶段：平坦沙地",
+      "第 2 阶段：风沙搬运",
+      "第 3 阶段：初始堆积",
+      "第 4 阶段：坡面分异",
+      "第 5 阶段：形成新月形沙丘",
+      "第 6 阶段：沙丘顺风迁移"
+    ][i] || "";
+  }
+
+  function updateStatus(){
+    const idx = getPhaseIndexByTime(t);
+    if(autoPaused){
+      statusText.textContent = `当前状态：${getPhaseName(idx)} 已停顿，可开始讲解`;
+      pauseNotice.setAttribute("opacity","1");
+      playBtn.textContent = idx === 5 ? "重新播放" : "继续播放";
+    }else{
+      statusText.textContent = `当前状态：正在演示 ${getPhaseName(idx)}`;
+      pauseNotice.setAttribute("opacity","0");
+      playBtn.textContent = "暂停";
+    }
+  }
+
+  function getDevelopment(p){
+    return clamp((p - 0.12) / 0.58, 0, 1);
+  }
+
+  function getMigration(p){
+    return clamp((p - 0.78) / 0.22, 0, 1);
+  }
+
+  function duneProfile(stage, shiftX){
+    const pts = [];
+    const xStart = 430;
+    const xEnd = 1350;
+
+    const c = 490 + 320*stage + shiftX;
+    const h = 10 + 180*stage;
+    const leftSigma = 30 + 150*stage;
+    const rightSigma = 20 + 50*stage;
+
+    for(let x=xStart; x<=xEnd; x+=4){
+      let y = groundY;
+
+      if(x <= c){
+        y = groundY - h * Math.exp(-((x-c)*(x-c)) / (2*leftSigma*leftSigma));
+      }else{
+        const core = groundY - h * Math.exp(-((x-c)*(x-c)) / (2*rightSigma*rightSigma));
+        const slipStart = c + 10;
+        const slipEnd = c + 105 + 28*stage;
+
+        let y2 = core;
+        if(x >= slipStart && x <= slipEnd){
+          const crestY = groundY - h*0.98;
+          const slipY = crestY + (groundY - crestY) * ((x-slipStart)/(slipEnd-slipStart)) * 0.95;
+          y2 = Math.max(core, slipY);
+        }
+        y = y2;
+      }
+
+      const horn1 = 12*stage*Math.exp(-((x-(c+135+90*stage))**2)/(2*(26+14*stage)**2));
+      const horn2 = 8*stage*Math.exp(-((x-(c+185+120*stage))**2)/(2*(25+16*stage)**2));
+      y -= horn1 + horn2;
+
+      pts.push([x,y]);
+    }
+
+    return {pts,c,h,leftSigma,rightSigma,stage,shiftX};
+  }
+
+  function buildDunePath(stage, shiftX){
+    if(stage < 0.02){
+      duneFill.setAttribute("d","");
+      duneLine.setAttribute("d","");
+      return {c:490,h:0,leftSigma:30,rightSigma:20,stage:0,shiftX:0};
+    }
+
+    const {pts,c,h,leftSigma,rightSigma} = duneProfile(stage, shiftX);
+    let d = `M ${pts[0][0]} ${groundY} `;
+    for(const [x,y] of pts) d += `L ${x} ${y} `;
+    d += `L ${pts[pts.length-1][0]} ${groundY} Z`;
+
+    let line = `M ${pts[0][0]} ${pts[0][1]} `;
+    for(let i=1;i<pts.length;i++) line += `L ${pts[i][0]} ${pts[i][1]} `;
+
+    duneFill.setAttribute("d", d);
+    duneLine.setAttribute("d", line);
+
+    return {c,h,leftSigma,rightSigma,stage,shiftX};
+  }
+
+  function getSurfaceY(x, stageInfo){
+    const {c,h,leftSigma,rightSigma,stage} = stageInfo;
+    if(h <= 0 || x < 430 || x > 1350) return groundY;
+
+    let y = groundY;
+
+    if(x <= c){
+      y = groundY - h * Math.exp(-((x-c)*(x-c)) / (2*leftSigma*leftSigma));
+    }else{
+      const core = groundY - h * Math.exp(-((x-c)*(x-c)) / (2*rightSigma*rightSigma));
+      const slipStart = c + 10;
+      const slipEnd = c + 105 + 28*stage;
+
+      let y2 = core;
+      if(x >= slipStart && x <= slipEnd){
+        const crestY = groundY - h*0.98;
+        const slipY = crestY + (groundY - crestY) * ((x-slipStart)/(slipEnd-slipStart)) * 0.95;
+        y2 = Math.max(core, slipY);
+      }
+      y = y2;
+    }
+
+    const horn1 = 12*stage*Math.exp(-((x-(c+135+90*stage))**2)/(2*(26+14*stage)**2));
+    const horn2 = 8*stage*Math.exp(-((x-(c+185+120*stage))**2)/(2*(25+16*stage)**2));
+    y -= horn1 + horn2;
+
+    return y;
+  }
+
+  function streamPath(baseY, stage, shift, duneShiftX){
+    const c = 500 + 300*stage + duneShiftX*0.55;
+    let d = "";
+    for(let x=70; x<=1490; x+=18){
+      const xs = x + shift;
+      const uplift = (8 + 32*stage) * Math.exp(-((xs-c)*(xs-c))/(2*(80+95*stage)*(80+95*stage)));
+      const y = baseY - uplift;
+      d += (x===70 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+    }
+    return d;
+  }
+
+  function updateStreamlines(stage, flowT, duneShiftX){
+    for(let i=0;i<streamEls.length;i++){
+      const shift = ((flowT*90 + i*18) % 110) - 55;
+      streamEls[i].setAttribute("d", streamPath(streamY[i], stage, shift, duneShiftX));
+    }
+  }
+
+  function updateParticles(stageInfo, dt, migration){
+    const stage = stageInfo.stage;
+    const leftFootX = stageInfo.c - (55 + 155*stage);
+    const crestX = stageInfo.c - 4;
+    const sourceRight = 400 + migration*40;
+
+    for(let i=0;i<particles.length;i++){
+      const p = particles[i];
+      p.phase += dt * (0.08 + stage*0.05 + (p.lane*0.003));
+      if(p.phase > 1) p.phase -= 1;
+
+      let x, y;
+      const laneOffset = (p.lane - 2) * 6;
+
+      if(stage < 0.04){
+        x = 90 + p.phase * 360;
+        y = groundY - 8 - (p.lane*4) + Math.sin(p.phase*10 + i)*1.5;
+      }else{
+        if(p.phase < 0.62){
+          const q = p.phase / 0.62;
+          x = 90 + q * Math.max(320, leftFootX - 100);
+          x = Math.min(x, sourceRight + q*60);
+          y = groundY - 8 - (p.lane*4) + Math.sin(q*9 + i)*1.2;
+        }else{
+          const q = (p.phase - 0.62) / 0.38;
+          x = lerp(leftFootX, crestX, q);
+          y = getSurfaceY(x, stageInfo) - 6 + laneOffset*0.3;
+        }
+      }
+
+      if(stage < 0.25 && x > obstacleX - 6 && x < obstacleX + 10 && y > groundY - 24){
+        y = groundY - 24;
+      }
+
+      y = Math.min(y, groundY - 4);
+
+      particleEls[i].setAttribute("cx", x.toFixed(1));
+      particleEls[i].setAttribute("cy", y.toFixed(1));
+    }
+  }
+
+  function updateSlipParticles(stageInfo){
+    const stage = stageInfo.stage;
+    if(stage < 0.26){
+      slipEls.forEach(el => {
+        el.setAttribute("cx",-20);
+        el.setAttribute("cy",-20);
+      });
+      return;
+    }
+
+    const c = stageInfo.c;
+    const h = stageInfo.h;
+    const crestX = c + 18;
+    const crestY = groundY - h*0.92;
+    const toeX = c + 120 + 25*stage;
+    const toeY = groundY - 10;
+
+    slipEls.forEach((el,i)=>{
+      const q = (i / slipEls.length + (t*0.18)%1) % 1;
+      const x = lerp(crestX, toeX, q) + Math.sin(i*1.9+t*5)*2;
+      const y = lerp(crestY, toeY, q) + Math.cos(i*1.3+t*4)*2;
+      el.setAttribute("cx", x.toFixed(1));
+      el.setAttribute("cy", y.toFixed(1));
+    });
+  }
+
+  function setLine(el, x1,y1,x2,y2){
+    el.setAttribute("x1", x1);
+    el.setAttribute("y1", y1);
+    el.setAttribute("x2", x2);
+    el.setAttribute("y2", y2);
+  }
+
+  function currentStageIndex(p){
+    if(p < 0.14) return 0;
+    if(p < 0.28) return 1;
+    if(p < 0.44) return 2;
+    if(p < 0.62) return 3;
+    if(p < 0.78) return 4;
+    return 5;
+  }
+
+  function updateStageBar(idx){
+    stageBox.forEach((el,i)=> el.classList.toggle('active', i===idx));
+  }
+
+  function updateLabels(stageInfo, p, migration){
+    const stage = stageInfo.stage;
+    const c = stageInfo.c;
+    const h = stageInfo.h;
+
+    if(p < 0.14){
+      infoLabel.textContent = "平坦裸露沙地：地表无植被覆盖，存在充足松散沙源";
+    }else if(p < 0.28){
+      infoLabel.textContent = "定向盛行风持续搬运沙粒，沙粒沿地表向下风方向移动";
+    }else if(p < 0.44){
+      infoLabel.textContent = "风沙流遇到微小障碍物后，近地风力减弱，沙粒开始堆积形成初始小沙堆";
+    }else if(p < 0.62){
+      infoLabel.textContent = "迎风坡持续向上搬运；背风坡沙粒在重力作用下滑落，形成滑落面";
+    }else if(p < 0.78){
+      infoLabel.textContent = "长期风力作用下，沙堆逐步发育成标准新月形沙丘，两角顺风向延伸";
+    }else{
+      infoLabel.textContent = "在持续风力和沙粒搬运作用下，新月形沙丘整体缓慢向下风方向迁移";
+    }
+
+    if(stage < 0.03){
+      windwardLabel.textContent = "";
+      leewardLabel.textContent = "";
+      slipfaceLabel.textContent = "";
+      transportLabel.textContent = "";
+      migrationLabel.textContent = "";
+
+      setLine(slopeArrow1,0,0,0,0);
+      setLine(slopeArrow2,0,0,0,0);
+      setLine(slopeArrow3,0,0,0,0);
+      setLine(slipArrow,0,0,0,0);
+      setLine(migrationArrow,0,0,0,0);
+      return;
+    }
+
+    windwardLabel.textContent = "迎风坡";
+    windwardLabel.setAttribute("x", c - 170);
+    windwardLabel.setAttribute("y", groundY - 80 - stage*35);
+
+    leewardLabel.textContent = "背风坡";
+    leewardLabel.setAttribute("x", c + 55);
+    leewardLabel.setAttribute("y", groundY - 110 - stage*42);
+
+    transportLabel.textContent = "沙粒搬运方向";
+    transportLabel.setAttribute("x", c - 230);
+    transportLabel.setAttribute("y", groundY - 145 - stage*15);
+
+    setLine(slopeArrow1, c-165, groundY-28, c-108, groundY-66);
+    setLine(slopeArrow2, c-120, groundY-50, c-65, groundY-98);
+    setLine(slopeArrow3, c-78, groundY-76, c-18, groundY-134);
+
+    if(stage > 0.22){
+      slipfaceLabel.textContent = "滑落面";
+      slipfaceLabel.setAttribute("x", c + 128);
+      slipfaceLabel.setAttribute("y", groundY - 26);
+      setLine(slipArrow, c+25, groundY-h*0.82, c+92, groundY-24);
+    }else{
+      slipfaceLabel.textContent = "";
+      setLine(slipArrow,0,0,0,0);
+    }
+
+    if(migration > 0.02){
+      migrationLabel.textContent = "沙丘整体顺风迁移";
+      migrationLabel.setAttribute("x", c - 40);
+      migrationLabel.setAttribute("y", groundY - 220);
+      setLine(migrationArrow, c - 10, groundY - 200, c + 150, groundY - 200);
+    }else{
+      migrationLabel.textContent = "";
+      setLine(migrationArrow,0,0,0,0);
+    }
+  }
+
+  function render(){
+    const p = clamp(t / totalDuration, 0, 1);
+    const development = getDevelopment(p);
+    const migration = getMigration(p);
+    const duneShiftX = migration * 150;
+
+    const idx = currentStageIndex(p);
+    updateStageBar(idx);
+
+    const shape = buildDunePath(development, duneShiftX);
+    updateStreamlines(development, t, duneShiftX);
+    updateParticles(shape, 1/60, migration);
+    updateSlipParticles(shape);
+    updateLabels(shape, p, migration);
+    updateStatus();
+  }
+
+  function checkAutoPause(prevT, nextT){
+    for(let i=0;i<stageTimes.length;i++){
+      if(!reachedPauses.has(i) && prevT < stageTimes[i] && nextT >= stageTimes[i]){
+        t = stageTimes[i];
+        reachedPauses.add(i);
+        playing = false;
+        autoPaused = true;
+        return true;
+      }
+    }
+    if(nextT >= totalDuration){
+      t = totalDuration;
+      playing = false;
+      autoPaused = true;
+      return true;
+    }
+    return false;
+  }
+
+  function animate(now){
+    const dt = Math.min(0.05, (now - lastTime)/1000);
+    lastTime = now;
+
+    if(playing){
+      autoPaused = false;
+      const prevT = t;
+      const nextT = t + dt;
+      const paused = checkAutoPause(prevT, nextT);
+      if(!paused){
+        t = nextT;
+      }
+    }
+
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  playBtn.addEventListener('click',()=>{
+    if(t >= totalDuration){
+      t = stageTimes[0];
+      playing = true;
+      autoPaused = false;
+      reachedPauses = new Set([0]);
+      render();
+      return;
+    }
+
+    if(playing){
+      playing = false;
+      autoPaused = false;
+    }else{
+      playing = true;
+      autoPaused = false;
+    }
+    render();
+  });
+
+  resetBtn.addEventListener('click',()=>{
+    t = stageTimes[0];
+    playing = false;
+    autoPaused = true;
+    reachedPauses = new Set([0]);
+    render();
+  });
+
+  stageJumpBtns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const jump = +btn.dataset.jump;
+      t = stageTimes[jump];
+      playing = false;
+      autoPaused = true;
+      reachedPauses = new Set();
+      for(let i=0;i<=jump;i++) reachedPauses.add(i);
+      render();
+    });
+  });
+
+  stageBox.forEach(box=>{
+    box.addEventListener('click',()=>{
+      const jump = +box.dataset.stage;
+      t = stageTimes[jump];
+      playing = false;
+      autoPaused = true;
+      reachedPauses = new Set();
+      for(let i=0;i<=jump;i++) reachedPauses.add(i);
+      render();
+    });
+  });
+
+  window.addEventListener('keydown',(e)=>{
+    if(e.code === 'Space'){
+      e.preventDefault();
+      playBtn.click();
+    }
+
+    if(e.code === 'ArrowRight'){
+      e.preventDefault();
+      const idx = clamp(getPhaseIndexByTime(t)+1,0,5);
+      t = stageTimes[idx];
+      playing = false;
+      autoPaused = true;
+      reachedPauses = new Set();
+      for(let i=0;i<=idx;i++) reachedPauses.add(i);
+      render();
+    }
+
+    if(e.code === 'ArrowLeft'){
+      e.preventDefault();
+      const idx = clamp(getPhaseIndexByTime(t)-1,0,5);
+      t = stageTimes[idx];
+      playing = false;
+      autoPaused = true;
+      reachedPauses = new Set();
+      for(let i=0;i<=idx;i++) reachedPauses.add(i);
+      render();
+    }
+  });
+
+  t = stageTimes[0];
+  render();
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
